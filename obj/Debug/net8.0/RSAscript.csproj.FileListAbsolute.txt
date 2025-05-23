@@ -1,0 +1,14 @@
+C:\Users\User\RSAscript\obj\Debug\net8.0\RSAscript.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\RSAscript\obj\Debug\net8.0\RSAscript.AssemblyInfoInputs.cache
+C:\Users\User\RSAscript\obj\Debug\net8.0\RSAscript.AssemblyInfo.cs
+C:\Users\User\RSAscript\obj\Debug\net8.0\RSAscript.csproj.CoreCompileInputs.cache
+C:\Users\User\RSAscript\bin\Debug\net8.0\RSAscript.exe
+C:\Users\User\RSAscript\bin\Debug\net8.0\RSAscript.deps.json
+C:\Users\User\RSAscript\bin\Debug\net8.0\RSAscript.runtimeconfig.json
+C:\Users\User\RSAscript\bin\Debug\net8.0\RSAscript.dll
+C:\Users\User\RSAscript\bin\Debug\net8.0\RSAscript.pdb
+C:\Users\User\RSAscript\obj\Debug\net8.0\RSAscript.dll
+C:\Users\User\RSAscript\obj\Debug\net8.0\refint\RSAscript.dll
+C:\Users\User\RSAscript\obj\Debug\net8.0\RSAscript.pdb
+C:\Users\User\RSAscript\obj\Debug\net8.0\RSAscript.genruntimeconfig.cache
+C:\Users\User\RSAscript\obj\Debug\net8.0\ref\RSAscript.dll
