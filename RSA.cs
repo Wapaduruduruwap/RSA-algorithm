@@ -76,33 +76,50 @@ public class RSA
         int pBits = bits / 2;
         int qBits = bits / 2;
         
-        p = GenerateProbablePrime(pBits);
-        Console.WriteLine($"Generated p ({pBits} bits) in {sw.ElapsedMilliseconds}ms");
+        int attempts = 0;
+        const int MAX_ATTEMPTS = 10;
         
-        do {
-            q = GenerateProbablePrime(qBits);
-        } while ((p - q).Abs().BitLength() < bits / 3); // Убеждаемся, что p и q достаточно различны
-        
-        Console.WriteLine($"Generated q ({qBits} bits) in {sw.ElapsedMilliseconds}ms");
-        
-        n = p * q;
-        phi = (p - BigInt.One) * (q - BigInt.One);
-        
-        // Используем стандартное значение открытого экспонента
-        e = new BigInt(65537);
-        
-        // Проверяем, что e и phi взаимно просты
-        if (phi.Gcd(e) != BigInt.One)
+        while (attempts < MAX_ATTEMPTS)
         {
-            throw new CryptographicException("Failed to generate valid RSA parameters: e and phi are not coprime");
+            try
+            {
+                p = GenerateProbablePrime(pBits);
+                Console.WriteLine($"Generated p ({pBits} bits) in {sw.ElapsedMilliseconds}ms");
+                
+                do {
+                    q = GenerateProbablePrime(qBits);
+                } while ((p - q).Abs().BitLength() < bits / 3);
+                
+                Console.WriteLine($"Generated q ({qBits} bits) in {sw.ElapsedMilliseconds}ms");
+                
+                n = p * q;
+                phi = (p - BigInt.One) * (q - BigInt.One);
+                
+                // Используем стандартное значение открытого экспонента
+                e = new BigInt(65537);
+                
+                // Проверяем, что e и phi взаимно просты
+                if (phi.Gcd(e) != BigInt.One)
+                {
+                    attempts++;
+                    continue;
+                }
+                
+                d = e.ModInverse(phi);
+                
+                // Проверяем корректность сгенерированных ключей
+                ValidateKeyPair();
+                
+                Console.WriteLine($"Key generation completed in {sw.ElapsedMilliseconds}ms");
+                return;
+            }
+            catch (Exception)
+            {
+                attempts++;
+                if (attempts >= MAX_ATTEMPTS)
+                    throw new CryptographicException("Failed to generate valid RSA key pair after maximum attempts");
+            }
         }
-        
-        d = e.ModInverse(phi);
-        
-        // Проверяем корректность сгенерированных ключей
-        ValidateKeyPair();
-        
-        Console.WriteLine($"Key generation completed in {sw.ElapsedMilliseconds}ms");
     }
 
     public BigInt Encrypt(BigInt message)
