@@ -66,8 +66,8 @@ public class RSA
 
     public RSA(int bits = 2048)
     {
-        if (bits < 1024)
-            throw new ArgumentException("Key size must be at least 1024 bits for security");
+        if (bits < 512)
+            throw new ArgumentException("Key size must be at least 512 bits for security");
 
         Console.WriteLine($"Generating RSA keys with {bits}-bit modulus...");
         var sw = System.Diagnostics.Stopwatch.StartNew();
@@ -323,8 +323,8 @@ public class RSA
 
     private BigInt GenerateProbablePrime(int bits)
     {
-        if (bits < 512)
-            throw new ArgumentException("Prime size must be at least 512 bits for security");
+        if (bits < 256)
+            throw new ArgumentException("Prime size must be at least 256 bits for security");
 
         using var rng = RandomNumberGenerator.Create();
         int byteLength = bits / 8 + (bits % 8 > 0 ? 1 : 0);
@@ -440,8 +440,8 @@ public class RSA
     private void ValidateKeyPair()
     {
         // Проверка размера модуля
-        if (n.BitLength() < 1024)
-            throw new CryptographicException("RSA modulus is too small. Minimum recommended size is 1024 bits.");
+        if (n.BitLength() < 512)
+            throw new CryptographicException("RSA modulus is too small. Minimum recommended size is 512 bits.");
 
         // Проверка, что p и q достаточно различны
         BigInt diff = p > q ? p - q : q - p;

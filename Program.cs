@@ -5,7 +5,7 @@ class Program
         try
         {
             // 1. Инициализация RSA
-            RSA rsa = new RSA(1024);
+            RSA rsa = new RSA(512);
             
             // 2. Получение открытого ключа
             var (e, n) = rsa.GetPublicKey();
