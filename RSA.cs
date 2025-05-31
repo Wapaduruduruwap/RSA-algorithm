@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 
 public class RSA
@@ -15,34 +14,26 @@ public class RSA
         random = new Random();
     }
 
-    // 1. Генерация открытого ключа на основе секретного числа P
     public (BigInt e, BigInt n) GeneratePublicKey(BigInt P)
     {
-        // Разбиваем P на две части примерно равной длины
         int length = P.ToString().Length;
         int halfLength = length / 2;
         
-        // Получаем p и q как простые числа, близкие к половинам P
         BigInt halfP = P / BigInt.Two;
         p = GeneratePrimeNumber(halfP);
         
-        // Для q берем число, меньшее p
         q = GeneratePrimeNumber(p - BigInt.One);
         
-        // Если получили то же самое число, ищем следующее меньшее простое
         while (q == p)
         {
             q = GeneratePrimeNumber(q - BigInt.One);
         }
 
-        // Вычисляем модуль n
         n = p * q;
 
-        // Вычисляем функцию Эйлера
         BigInt phi = CalculateEulerFunction();
 
-        // Выбираем открытую экспоненту
-        e = new BigInt(65537); // Стандартное значение
+        e = new BigInt(65537); 
         
         while (BigInt.Gcd(phi, e) != BigInt.One)
         {
@@ -52,13 +43,11 @@ public class RSA
         return (e, n);
     }
 
-    // 2. Вычисление функции Эйлера
     public BigInt CalculateEulerFunction()
     {
         return (p - BigInt.One) * (q - BigInt.One);
     }
 
-    // 3. Генерация простого числа, меньшего или равного x
     public BigInt GeneratePrimeNumber(BigInt x)
     {
         if ((x % BigInt.Two) == BigInt.Zero)
@@ -77,7 +66,6 @@ public class RSA
         return BigInt.Two;
     }
 
-    // 4. Проверка числа на простоту
     public bool IsPrime(BigInt number)
     {
         if (number <= BigInt.One)
@@ -96,8 +84,7 @@ public class RSA
             s++;
         }
 
-        // Тест Миллера-Рабина
-        int k = 10; // Количество проверок
+        int k = 10; 
         for (int i = 0; i < k; i++)
         {
             BigInt a = GenerateRandomNumber(BigInt.Two, number - BigInt.Two);
@@ -124,7 +111,6 @@ public class RSA
         return true;
     }
 
-    // 5. Генерация случайного числа в заданном диапазоне
     public BigInt GenerateRandomNumber(BigInt min, BigInt max)
     {
         int length = max.ToString().Length;
@@ -143,7 +129,6 @@ public class RSA
         return result;
     }
 
-    // 6. Вычисление основного значения по модулю
     public BigInt CalculateModValue(BigInt value, BigInt modulus)
     {
         if (modulus.IsZero())
@@ -155,8 +140,7 @@ public class RSA
 
         return result;
     }
-
-    // 7. Нахождение обратного элемента по модулю (расширенный алгоритм Евклида)
+    
     public BigInt FindModularInverse(BigInt a, BigInt m)
     {
         if (m.IsZero())
@@ -170,42 +154,31 @@ public class RSA
         if (d != BigInt.One)
             throw new ArgumentException("Обратный элемент не существует");
 
-        // Нормализуем результат в диапазоне [1, m-1]
         while (x <= BigInt.Zero)
             x = x + m;
         while (x >= m)
             x = x - m;
 
-        // Проверяем корректность результата
         BigInt check = (a * x) % m;
-        
+
         if (check != BigInt.One)
             throw new ArgumentException("Ошибка вычисления обратного элемента");
 
         return x;
     }
 
-    // 8. Расшифровка сообщения
     public BigInt Decrypt(BigInt E)
     {
-        // Вычисляем закрытую экспоненту
         d = CalculatePrivateExponent();
-        
-        // Расшифровываем сообщение
         return E.ModPow(d, n);
     }
 
-    // 9. Шифрование секретного ключа
     public BigInt Encrypt(BigInt P)
     {
-        // Генерируем открытый ключ
         var (publicE, publicN) = GeneratePublicKey(P);
-        
-        // Шифруем сообщение
         return P.ModPow(publicE, publicN);
     }
 
-    // 10. Вычисление закрытой экспоненты
     public BigInt CalculatePrivateExponent()
     {
         BigInt phi = CalculateEulerFunction();
