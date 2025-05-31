@@ -1,40 +1,87 @@
+using System;
+using System.Text;
+using System.IO;
+
 class Program
 {
+    // Метод кодирования сообщения
+    static string EncodeMessage(string message)
+    {
+        StringBuilder encoded = new StringBuilder();
+        foreach (char c in message)
+        {
+            // Преобразуем каждый символ в 4-значный код
+            encoded.Append(((int)c).ToString("D4"));
+        }
+        return encoded.ToString();
+    }
+
+    // Метод декодирования сообщения
+    static string DecodeMessage(string encoded)
+    {
+        if (encoded.Length % 4 != 0)
+        {
+            // Добавляем ведущие нули, если их не хватает
+            encoded = new string('0', 4 - (encoded.Length % 4)) + encoded;
+        }
+
+        StringBuilder decoded = new StringBuilder();
+        for (int i = 0; i < encoded.Length; i += 4)
+        {
+            string code = encoded.Substring(i, 4);
+            if (int.TryParse(code, out int asciiCode))
+            {
+                decoded.Append((char)asciiCode);
+            }
+            else
+            {
+                throw new ArgumentException($"Invalid ASCII code at position {i}: {code}");
+            }
+        }
+        return decoded.ToString();
+    }
+
     static void Main()
     {
         try
         {
-            // 1. Инициализация RSA
-            RSA rsa = new RSA(512);
-            
-            // 2. Получение открытого ключа
-            var (e, n) = rsa.GetPublicKey();
-            Console.WriteLine($"Public key:\nE: {e}\nN: {n}");
-            
-            // 3. Сохраняем открытый ключ в файл
-            rsa.SavePublicKey("public_key.txt");
-            
-            // 4. Загружаем открытый ключ из файла
-            var (loadedE, loadedN) = RSA.LoadPublicKey("public_key.txt");
-            
-            // 5. Шифруем файл с помощью открытого ключа
-            rsa.EncryptFileWithPublicKey("secret.txt", "encrypted_secret.txt", loadedE, loadedN);
-            Console.WriteLine("File encrypted successfully");
-            
-            // 6. Дешифруем файл с помощью закрытого ключа
-            rsa.DecryptFileWithPrivateKey("encrypted_secret.txt", "decrypted_secret.txt");
-            Console.WriteLine("File decrypted successfully");
-            
-            // 7. Проверяем результат
-            Console.WriteLine("\nOriginal:");
-            Console.WriteLine(File.ReadAllText("secret.txt"));
-            
-            Console.WriteLine("\nDecrypted:");
-            Console.WriteLine(File.ReadAllText("decrypted_secret.txt"));
+            Console.WriteLine("Тестирование RSA шифрования с русским текстом");
+
+            // Создаем экземпляр RSA
+            RSA rsa = new RSA();
+
+            // Создаем текст для шифрования
+            string text = "Маша купила 5 яблок";
+            Console.WriteLine($"Исходный текст: {text}");
+
+            // Преобразуем текст в число через ASCII коды
+            string encodedText = EncodeMessage(text);
+            BigInt textNumber = new BigInt(encodedText);
+            Console.WriteLine($"Текст в виде ASCII кодов: {encodedText}");
+            Console.WriteLine($"Текст в виде числа: {textNumber}");
+
+            // Шифруем число
+            Console.WriteLine("\nШифрование...");
+            BigInt encrypted = rsa.Encrypt(textNumber);
+            Console.WriteLine($"Зашифрованное значение E: {encrypted}");
+
+            // Расшифровываем
+            Console.WriteLine("\nРасшифрование...");
+            BigInt decrypted = rsa.Decrypt(encrypted);
+            Console.WriteLine($"Расшифрованное число: {decrypted}");
+
+            // Преобразуем число обратно в текст
+            string decryptedText = DecodeMessage(decrypted.ToString());
+            Console.WriteLine($"Расшифрованный текст: {decryptedText}");
+
+            // Проверяем корректность
+            Console.WriteLine("\nПроверка результата:");
+            Console.WriteLine($"Исходный текст равен расшифрованному: {text == decryptedText}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"\nОшибка: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
         }
     }
 }

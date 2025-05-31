@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RSAscript")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bee6bfe3970bcdb2ae0b3dc8be7979d157c91dad")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0cde875e4aa54d82d95397014cf8875a78be537b")]
 [assembly: System.Reflection.AssemblyProductAttribute("RSAscript")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RSAscript")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

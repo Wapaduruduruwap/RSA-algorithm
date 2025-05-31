@@ -90,6 +90,8 @@ public class BigInt : IComparable<BigInt>, IEquatable<BigInt>
 
     public bool IsZero() => digits.Count == 1 && digits[0] == 0;
 
+    public bool IsOne() => digits.Count == 1 && digits[0] == 1 && !isNegative;
+
     public BigInt Abs() => new BigInt(new List<byte>(digits), false);
 
     public BigInt Negate() => IsZero() ? this : new BigInt(new List<byte>(digits), !isNegative);
@@ -295,49 +297,68 @@ public class BigInt : IComparable<BigInt>, IEquatable<BigInt>
 
     public BigInt ModInverse(BigInt modulus)
     {
-        if (modulus <= Zero)
-            throw new ArgumentException("Modulus must be positive");
+        if (modulus.IsZero())
+            throw new ArgumentException("Modulus cannot be zero.");
+        
+        if (modulus.IsOne())
+            return BigInt.Zero;
 
-        BigInt a = Mod(this, modulus);
-        if (a < Zero) a = Add(a, modulus);
+        BigInt u = this;
+        BigInt v = modulus;
+        BigInt b = BigInt.Zero;
+        BigInt c = BigInt.One;
 
-        BigInt m = new BigInt(modulus.ToString());
-        BigInt x = Zero, y = One;
-        BigInt lastX = One, lastY = Zero;
-
-        while (!m.IsZero())
+        while (!u.IsZero())
         {
-            BigInt q = Divide(a, m);
-            BigInt temp = m;
-            m = Mod(a, m);
-            a = temp;
+            while ((u.digits[0] & 1) == 0) // u четное
+            {
+                u = u / BigInt.Two;
+                if ((b.digits[0] & 1) == 0)
+                    b = b / BigInt.Two;
+                else
+                    b = (b + modulus) / BigInt.Two;
+            }
 
-            temp = x;
-            x = Subtract(lastX, Multiply(q, x));
-            lastX = temp;
+            while ((v.digits[0] & 1) == 0) // v четное
+            {
+                v = v / BigInt.Two;
+                if ((c.digits[0] & 1) == 0)
+                    c = c / BigInt.Two;
+                else
+                    c = (c + modulus) / BigInt.Two;
+            }
 
-            temp = y;
-            y = Subtract(lastY, Multiply(q, y));
-            lastY = temp;
+            if (u >= v)
+            {
+                u = u - v;
+                b = b - c;
+            }
+            else
+            {
+                v = v - u;
+                c = c - b;
+            }
         }
 
-        if (a != One)
-            throw new ArithmeticException("Numbers are not coprime");
-
-        return Mod(Add(Mod(lastX, modulus), modulus), modulus);
+        while (c < BigInt.Zero)
+            c = c + modulus;
+        
+        return c;
     }
 
     public override string ToString()
     {
-        if (IsZero()) return "0";
-        
-        var sb = new StringBuilder();
-        if (isNegative) sb.Append('-');
-        
+        if (IsZero())
+            return "0";
+
+        StringBuilder result = new StringBuilder();
+        if (isNegative)
+            result.Append('-');
+
         for (int i = digits.Count - 1; i >= 0; i--)
-            sb.Append(digits[i]);
-        
-        return sb.ToString();
+            result.Append(digits[i]);
+
+        return result.ToString();
     }
 
     public byte ToByte()
@@ -375,4 +396,34 @@ public class BigInt : IComparable<BigInt>, IEquatable<BigInt>
     }
     public static BigInt Ten => new BigInt(10);
     public static BigInt Gcd(BigInt a, BigInt b) => b.IsZero() ? a : Gcd(b, Mod(a, b));
+
+    public byte[] ToByteArray()
+    {
+        List<byte> bytes = new List<byte>();
+        BigInt value = this.Abs();
+        
+        while (!value.IsZero())
+        {
+            bytes.Add((byte)(value % BigInt.Ten).ToByte());
+            value = value / BigInt.Ten;
+        }
+
+        if (bytes.Count == 0)
+            bytes.Add(0);
+
+        // Добавляем знак в последний байт, если число отрицательное
+        if (isNegative)
+            bytes.Add(0xFF);
+            
+        return bytes.ToArray();
+    }
+
+    public static (BigInt x, BigInt y, BigInt d) ExtendedGcd(BigInt a, BigInt b)
+    {
+        if (b.IsZero())
+            return (BigInt.One, BigInt.Zero, a);
+
+        var (x, y, d) = ExtendedGcd(b, a % b);
+        return (y, x - (a / b) * y, d);
+    }
 }

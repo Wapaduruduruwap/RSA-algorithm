@@ -27,3 +27,4 @@ D:\Codes\RSA-algorithm\obj\Debug\net8.0\refint\RSAscript.dll
 D:\Codes\RSA-algorithm\obj\Debug\net8.0\RSAscript.pdb
 D:\Codes\RSA-algorithm\obj\Debug\net8.0\RSAscript.genruntimeconfig.cache
 D:\Codes\RSA-algorithm\obj\Debug\net8.0\ref\RSAscript.dll
+C:\Users\User\RSAscript\obj\Debug\net8.0\RSAscript.sourcelink.json
