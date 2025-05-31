@@ -18,48 +18,36 @@ public class RSA
     // 1. Генерация открытого ключа на основе секретного числа P
     public (BigInt e, BigInt n) GeneratePublicKey(BigInt P)
     {
-        Console.WriteLine($"Начинаем генерацию ключей для P = {P}");
-        
         // Разбиваем P на две части примерно равной длины
         int length = P.ToString().Length;
         int halfLength = length / 2;
         
         // Получаем p и q как простые числа, близкие к половинам P
         BigInt halfP = P / BigInt.Two;
-        Console.WriteLine($"Ищем простое число p <= {halfP}");
         p = GeneratePrimeNumber(halfP);
-        Console.WriteLine($"Найдено p = {p}");
         
         // Для q берем число, меньшее p
-        Console.WriteLine($"Ищем простое число q < {p}");
         q = GeneratePrimeNumber(p - BigInt.One);
         
         // Если получили то же самое число, ищем следующее меньшее простое
         while (q == p)
         {
-            Console.WriteLine($"q равно p, ищем меньшее простое число");
             q = GeneratePrimeNumber(q - BigInt.One);
         }
-        Console.WriteLine($"Найдено q = {q}");
 
         // Вычисляем модуль n
         n = p * q;
-        Console.WriteLine($"Вычислен модуль n = p * q = {n}");
 
         // Вычисляем функцию Эйлера
         BigInt phi = CalculateEulerFunction();
-        Console.WriteLine($"Функция Эйлера phi = {phi}");
 
         // Выбираем открытую экспоненту
         e = new BigInt(65537); // Стандартное значение
-        Console.WriteLine($"Пробуем открытую экспоненту e = {e}");
         
         while (BigInt.Gcd(phi, e) != BigInt.One)
         {
             e = e + BigInt.Two;
-            Console.WriteLine($"GCD не равен 1, пробуем следующее e = {e}");
         }
-        Console.WriteLine($"Найдена подходящая открытая экспонента e = {e}");
 
         return (e, n);
     }
@@ -81,7 +69,6 @@ public class RSA
         {
             if (IsPrime(current))
             {
-                Console.WriteLine($"Найдено простое число: {current}");
                 return current;
             }
             current = current - BigInt.Two;
@@ -156,55 +143,72 @@ public class RSA
         return result;
     }
 
-    // 7. Расшифровка сообщения
+    // 6. Вычисление основного значения по модулю
+    public BigInt CalculateModValue(BigInt value, BigInt modulus)
+    {
+        if (modulus.IsZero())
+            throw new ArgumentException("Модуль не может быть равен нулю");
+
+        BigInt result = value % modulus;
+        if (result < BigInt.Zero)
+            result = result + modulus;
+
+        return result;
+    }
+
+    // 7. Нахождение обратного элемента по модулю (расширенный алгоритм Евклида)
+    public BigInt FindModularInverse(BigInt a, BigInt m)
+    {
+        if (m.IsZero())
+            throw new ArgumentException("Модуль не может быть равен нулю");
+
+        if (m.IsOne())
+            return BigInt.Zero;
+
+        var (x, y, d) = BigInt.ExtendedGcd(a, m);
+
+        if (d != BigInt.One)
+            throw new ArgumentException("Обратный элемент не существует");
+
+        // Нормализуем результат в диапазоне [1, m-1]
+        while (x <= BigInt.Zero)
+            x = x + m;
+        while (x >= m)
+            x = x - m;
+
+        // Проверяем корректность результата
+        BigInt check = (a * x) % m;
+        
+        if (check != BigInt.One)
+            throw new ArgumentException("Ошибка вычисления обратного элемента");
+
+        return x;
+    }
+
+    // 8. Расшифровка сообщения
     public BigInt Decrypt(BigInt E)
     {
         // Вычисляем закрытую экспоненту
         d = CalculatePrivateExponent();
-        Console.WriteLine($"Вычислена закрытая экспонента d = {d}");
         
         // Расшифровываем сообщение
-        Console.WriteLine($"Расшифровываем E = {E} с помощью d = {d} и n = {n}");
-        BigInt result = E.ModPow(d, n);
-        Console.WriteLine($"Результат расшифрования: {result}");
-        return result;
+        return E.ModPow(d, n);
     }
 
-    // 8. Шифрование секретного ключа
+    // 9. Шифрование секретного ключа
     public BigInt Encrypt(BigInt P)
     {
         // Генерируем открытый ключ
-        Console.WriteLine("Генерация открытого ключа...");
         var (publicE, publicN) = GeneratePublicKey(P);
-        Console.WriteLine($"Сгенерирован открытый ключ: (e={publicE}, n={publicN})");
         
         // Шифруем сообщение
-        Console.WriteLine($"Шифруем P = {P} с помощью e = {publicE} и n = {publicN}");
-        BigInt result = P.ModPow(publicE, publicN);
-        Console.WriteLine($"Результат шифрования: {result}");
-        return result;
+        return P.ModPow(publicE, publicN);
     }
 
-    // 9. Вычисление закрытой экспоненты
+    // 10. Вычисление закрытой экспоненты
     public BigInt CalculatePrivateExponent()
     {
         BigInt phi = CalculateEulerFunction();
-        Console.WriteLine($"Вычисляем закрытую экспоненту для e = {e} и phi = {phi}");
-        
-        var (d, _, gcd) = BigInt.ExtendedGcd(e, phi);
-        Console.WriteLine($"Результат ExtendedGcd: d = {d}, gcd = {gcd}");
-        
-        if (gcd != BigInt.One)
-            throw new ArgumentException("Невозможно вычислить закрытую экспоненту");
-
-        // Если d отрицательное, добавляем значение функции Эйлера
-        if (d < BigInt.Zero)
-        {
-            Console.WriteLine($"d отрицательное ({d}), добавляем phi");
-            d = d + phi;
-            Console.WriteLine($"Новое значение d = {d}");
-        }
-
-        return d;
+        return FindModularInverse(e, phi);
     }
 }

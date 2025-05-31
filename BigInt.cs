@@ -365,7 +365,25 @@ public class BigInt : IComparable<BigInt>, IEquatable<BigInt>
         return bytes.ToArray();
     }
     public static BigInt Ten => new BigInt(10);
+
+    // Нахождение наибольшего общего делителя (НОД)
+    // Используется для проверки, являются ли числа взаимно простыми
     public static BigInt Gcd(BigInt a, BigInt b) => b.IsZero() ? a : Gcd(b, Mod(a, b));
+
+    // Расширенный алгоритм Евклида для нахождения модульной инверсии
+    // Возвращает кортеж (x, y, d), где:
+    // x - коэффициент при a
+    // y - коэффициент при b
+    // d - НОД(a,b)
+    // Используется для нахождения d такого, что e×d≡1 mod φ(n)
+    public static (BigInt x, BigInt y, BigInt d) ExtendedGcd(BigInt a, BigInt b)
+    {
+        if (b.IsZero())
+            return (BigInt.One, BigInt.Zero, a);
+
+        var (x, y, d) = ExtendedGcd(b, a % b);
+        return (y, x - (a / b) * y, d);
+    }
 
     public byte[] ToByteArray()
     {
@@ -386,14 +404,5 @@ public class BigInt : IComparable<BigInt>, IEquatable<BigInt>
             bytes.Add(0xFF);
             
         return bytes.ToArray();
-    }
-
-    public static (BigInt x, BigInt y, BigInt d) ExtendedGcd(BigInt a, BigInt b)
-    {
-        if (b.IsZero())
-            return (BigInt.One, BigInt.Zero, a);
-
-        var (x, y, d) = ExtendedGcd(b, a % b);
-        return (y, x - (a / b) * y, d);
     }
 }
