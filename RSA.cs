@@ -191,15 +191,20 @@ public class RSA
         BigInt phi = CalculateEulerFunction();
         Console.WriteLine($"Вычисляем закрытую экспоненту для e = {e} и phi = {phi}");
         
-        try
-        {
-            d = e.ModInverse(phi);
-            Console.WriteLine($"Вычислена закрытая экспонента d = {d}");
-            return d;
-        }
-        catch (ArgumentException)
-        {
+        var (d, _, gcd) = BigInt.ExtendedGcd(e, phi);
+        Console.WriteLine($"Результат ExtendedGcd: d = {d}, gcd = {gcd}");
+        
+        if (gcd != BigInt.One)
             throw new ArgumentException("Невозможно вычислить закрытую экспоненту");
+
+        // Если d отрицательное, добавляем значение функции Эйлера
+        if (d < BigInt.Zero)
+        {
+            Console.WriteLine($"d отрицательное ({d}), добавляем phi");
+            d = d + phi;
+            Console.WriteLine($"Новое значение d = {d}");
         }
+
+        return d;
     }
 }

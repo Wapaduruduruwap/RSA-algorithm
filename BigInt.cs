@@ -303,47 +303,17 @@ public class BigInt : IComparable<BigInt>, IEquatable<BigInt>
         if (modulus.IsOne())
             return BigInt.Zero;
 
-        BigInt u = this;
-        BigInt v = modulus;
-        BigInt b = BigInt.Zero;
-        BigInt c = BigInt.One;
-
-        while (!u.IsZero())
-        {
-            while ((u.digits[0] & 1) == 0) // u четное
-            {
-                u = u / BigInt.Two;
-                if ((b.digits[0] & 1) == 0)
-                    b = b / BigInt.Two;
-                else
-                    b = (b + modulus) / BigInt.Two;
-            }
-
-            while ((v.digits[0] & 1) == 0) // v четное
-            {
-                v = v / BigInt.Two;
-                if ((c.digits[0] & 1) == 0)
-                    c = c / BigInt.Two;
-                else
-                    c = (c + modulus) / BigInt.Two;
-            }
-
-            if (u >= v)
-            {
-                u = u - v;
-                b = b - c;
-            }
-            else
-            {
-                v = v - u;
-                c = c - b;
-            }
-        }
-
-        while (c < BigInt.Zero)
-            c = c + modulus;
+        var (x, _, d) = ExtendedGcd(this, modulus);
         
-        return c;
+        if (d != BigInt.One)
+            throw new ArgumentException("Multiplicative inverse does not exist.");
+
+        // Нормализуем результат в диапазоне [0, modulus-1]
+        x = x % modulus;
+        if (x < BigInt.Zero)
+            x += modulus;
+
+        return x;
     }
 
     public override string ToString()

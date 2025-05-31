@@ -46,6 +46,7 @@ class Program
         try
         {
             Console.WriteLine("Тестирование RSA шифрования с русским текстом");
+            Console.WriteLine("-------------------------------------------");
 
             // Создаем экземпляр RSA
             RSA rsa = new RSA();
